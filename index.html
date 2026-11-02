@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Business Deals | Careers</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #020305;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+header {
+  padding: 25px;
+  background: #05070b;
+  border-bottom: 1px solid #333;
+  text-align: center;
+  letter-spacing: 4px;
+}
+
+header h2 {
+  color: #ff263d;
+}
+
+.hero {
+  min-height: 75vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 30px;
+  background:
+    radial-gradient(circle, #161b25, #020305 70%);
+}
+
+.hero h1 {
+  font-size: clamp(40px, 8vw, 90px);
+  text-transform: uppercase;
+  animation: flicker 4s infinite;
+}
+
+.hero h1 span {
+  color: #ff263d;
+}
+
+.hero p {
+  color: #aaa;
+  line-height: 1.8;
+}
+
+button {
+  padding: 15px 25px;
+  background: #ff263d;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #b90018;
+}
+
+section {
+  padding: 60px 20px;
+}
+
+h2 {
+  text-align: center;
+}
+
+.panel {
+  max-width: 700px;
+  margin: auto;
+  padding: 30px;
+  background: #090d13;
+  border: 1px solid #333;
+  box-shadow: 0 0 30px #000;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0 20px;
+  background: #030507;
+  color: white;
+  border: 1px solid #444;
+}
+
+textarea {
+  min-height: 100px;
+}
+
+.application {
+  padding: 20px;
+  margin-top: 15px;
+  background: #10151c;
+  border: 1px solid #333;
+  overflow-wrap: anywhere;
+}
+
+.application h3 {
+  color: #ff263d;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96% { opacity: .4; }
+  98% { opacity: .8; }
+}
+
+footer {
+  padding: 30px;
+  text-align: center;
+  color: #777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>BUSINESS DEALS</h2>
+  CAREERS PORTAL
+</header>
+
+<div class="hero">
+  <div>
+    <h1>JOIN THE<br><span>UNKNOWN</span></h1>
+    <p>
+      Your future begins here.<br>
+      Apply today and become part of Business Deals.
+    </p>
+    <button onclick="document.getElementById('apply').scrollIntoView()">
+      APPLY NOW
+    </button>
+  </div>
+</div>
+
+<section id="apply">
+  <h2>JOB APPLICATION</h2>
+
+  <div class="panel">
+    <form id="applicationForm">
+
+      <label>Full Name *</label>
+      <input id="name" required maxlength="100"
+        placeholder="Enter your name">
+
+      <label>Phone Number *</label>
+      <input id="phone" required maxlength="30"
+        placeholder="+880...">
+
+      <label>Email Address *</label>
+      <input id="email" type="email" required
+        placeholder="you@example.com">
+
+      <label>Job Position *</label>
+      <select id="position" required>
+        <option value="">Select Position</option>
+        <option>Business Development</option>
+        <option>Marketing</option>
+        <option>Sales</option>
+        <option>Customer Support</option>
+        <option>Internship</option>
+        <option>Other</option>
+      </select>
+
+      <label>Experience</label>
+      <textarea id="experience"
+        placeholder="Tell us about yourself"></textarea>
+
+      <button type="submit">
+        SUBMIT APPLICATION
+      </button>
+
+      <p id="message"></p>
+    </form>
+  </div>
+</section>
+
+<section id="admin">
+  <h2>ADMIN CONTROL ROOM</h2>
+
+  <div class="panel">
+
+    <label>Admin Email</label>
+    <input id="adminEmail" type="email"
+      placeholder="Admin email">
+
+    <label>Admin Password</label>
+    <input id="adminPassword" type="password"
+      placeholder="Admin password">
+
+    <button onclick="loginAdmin()">
+      ADMIN LOGIN
+    </button>
+
+    <p id="adminMessage"></p>
+
+    <div id="dashboard" class="hidden">
+      <h3>ALL APPLICATIONS</h3>
+      <div id="applications"></div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  BUSINESS DEALS — CAREERS
+</footer>
+
+<script type="module">
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  updateDoc,
+  doc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* YOUR FIREBASE CONFIG */
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const $ = id => document.getElementById(id);
+
+let adminUser = null;
+
+/* SUBMIT APPLICATION */
+
+$("applicationForm").addEventListener("submit", async e => {
+
+  e.preventDefault();
+
+  const application = {
+    name: $("name").value.trim(),
+    phone: $("phone").value.trim(),
+    email: $("email").value.trim(),
+    position: $("position").value,
+    experience: $("experience").value.trim(),
+
+    reply: "",
+    status: "Received",
+
+    createdAt: serverTimestamp()
+  };
+
+  try {
+
+    await addDoc(
+      collection(db, "applications"),
+      application
+    );
+
+    $("applicationForm").reset();
+
+    $("message").textContent =
+      "Application submitted successfully!";
+
+  } catch (error) {
+
+    console.error(error);
+
+    $("message").textContent =
+      "Submission failed. Please try again.";
+
+  }
+
+});
+
+/* ADMIN LOGIN */
+
+window.loginAdmin = async function() {
+
+  try {
+
+    await signInWithEmailAndPassword(
+      auth,
+      $("adminEmail").value.trim(),
+      $("adminPassword").value
+    );
+
+    $("adminMessage").textContent =
+      "Admin login successful.";
+
+  } catch (error) {
+
+    $("adminMessage").textContent =
+      "Incorrect email or password.";
+
+  }
+
+};
+
+/* ADMIN AUTHENTICATION */
+
+onAuthStateChanged(auth, user => {
+
+  adminUser = user;
+
+  if (user) {
+
+    $("dashboard").classList.remove("hidden");
+
+    loadApplications();
+
+  } else {
+
+    $("dashboard").classList.add("hidden");
+
+  }
+
+});
+
+/* LOAD ALL APPLICATIONS */
+
+function loadApplications() {
+
+  const q = query(
+    collection(db, "applications"),
+    orderBy("createdAt", "desc")
+  );
+
+  onSnapshot(q, snapshot => {
+
+    const container = $("applications");
+
+    container.innerHTML = "";
+
+    snapshot.forEach(documentSnapshot => {
+
+      const a = documentSnapshot.data();
+
+      const id = documentSnapshot.id;
+
+      const card = document.createElement("div");
+
+      card.className = "application";
+
+      const title = document.createElement("h3");
+      title.textContent = a.name;
+
+      const details = document.createElement("p");
+
+      details.textContent =
+        "Phone: " + a.phone +
+        "\nEmail: " + a.email +
+        "\nPosition: " + a.position +
+        "\nExperience: " + a.experience +
+        "\nStatus: " + a.status;
+
+      details.style.whiteSpace = "pre-line";
+
+      const reply = document.createElement("textarea");
+
+      reply.placeholder = "Write your reply...";
+
+      reply.value = a.reply || "";
+
+      const button = document.createElement("button");
+
+      button.textContent = "SAVE REPLY";
+
+      button.onclick = async () => {
+
+        await updateDoc(
+          doc(db, "applications", id),
+          {
+            reply: reply.value,
+            status: "Replied"
+          }
+        );
+
+        alert("Reply saved!");
+
+      };
+
+      card.append(title, details, reply, button);
+
+      container.appendChild(card);
+
+    });
+
+  });
+
+}
+
+</script>
+
+</body>
+</html>
